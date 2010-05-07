@@ -10,14 +10,15 @@ trait MQHandler {
 }
 
 object MQChannel {
-  def apply(exchangeName: String, queueName: String, routingKey: String) = {
+  def apply(exchangeName: String, queueName: String, routingKey: String,
+    host: String, port: Int) = {
     val durable = true
 
-    val params = new ConnectionParameters();
+    val params = new ConnectionParameters()
 
-    val conFactory = new ConnectionFactory(params);
+    val conFactory = new ConnectionFactory(params)
 
-    val conn = conFactory.newConnection("localhost");
+    val conn = conFactory.newConnection(host, port)
     val channel = conn.createChannel();
 
     channel.exchangeDeclare(exchangeName, "direct", durable)

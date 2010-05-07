@@ -24,10 +24,14 @@ object Boot {
     val exchange = config.getString("amqp.exchange", "smartpush")
     val queue = config.getString("amqp.queue", "smartpush.notification")
     val routing = config.getString("amqp.routing", "smartpush.notification")
+    val mqHost = config.getString("amqp.hostname", "localhost")
+    val mqPort = config.getInt("amqp.port", 5672)
 
     val handler = new MQApnsHandler(new ApnsSender(keyStore, password))
 
-    val listener = new NotificationListener(MQChannel(exchange, queue, routing), handler, queue)
+    val listener = new NotificationListener(
+      MQChannel(exchange, queue, routing, mqHost, mqPort),
+      handler, queue)
 
     logger.debug("starting")
     listener.run()
