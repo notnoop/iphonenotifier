@@ -3,7 +3,7 @@ package com.notnoop.smartpush.notifier
 import org.slf4j.LoggerFactory
 
 import com.rabbitmq.client.{ConnectionFactory,ConnectionParameters,Channel}
-import com.rabbitmq.client.QueueingConsumer
+import com.rabbitmq.client.{QueueingConsumer, ShutdownSignalException}
 
 trait MQHandler {
   def handleRequest(msg: Array[Byte]): Boolean
@@ -34,14 +34,15 @@ object MQChannel {
 }
 
 class NotificationListener(channel: Channel, handler :MQHandler,
-  queueName: String) {
+  queueName: String) extends Thread {
   val logger = LoggerFactory.getLogger(getClass)
+  private[this] var consumer: QueueingConsumer = _
 
-  def run() = {
-    val consumer = new QueueingConsumer(channel)
+  override def run() = {
+    consumer = new QueueingConsumer(channel)
     channel.basicConsume(queueName, false, consumer)
 
-    while (true) {
+    while (consumer.getChannel.isOpen) {
       try {
         val delivery = consumer.nextDelivery();
         logger.debug("Received new request")
@@ -50,9 +51,12 @@ class NotificationListener(channel: Channel, handler :MQHandler,
           channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         }
       } catch {
+        case e: ShutdownSignalException => // Do nothing
         case e => logger.error("Error while handling new message", e)
       }
     }
   }
+
+  def close() = consumer.getChannel.close(0, "application termination")
 }
 

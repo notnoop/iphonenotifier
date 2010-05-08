@@ -33,7 +33,7 @@ class ApnsSender(service: ApnsService) {
       .customField("threadid", threadidHex)
       .customField("msg.url", url)
       .badge(badge).shrinkBody()
-      .build();
+      .build()
 
     logger.debug("Notifying {} for message {}", token, message)
     service.push(token, payload)
