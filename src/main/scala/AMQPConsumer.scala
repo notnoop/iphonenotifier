@@ -10,6 +10,10 @@ trait MQHandler {
 }
 
 object MQChannel {
+  def apply(exchangeName: String, queueName: String,
+    routingKey: String): Channel
+    = this(exchangeName, queueName, routingKey, "localhost", 5672)
+
   def apply(exchangeName: String, queueName: String, routingKey: String,
     host: String, port: Int) = {
     val durable = true
