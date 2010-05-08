@@ -23,7 +23,7 @@ object MQChannel {
     val conFactory = new ConnectionFactory(params)
 
     val conn = conFactory.newConnection(host, port)
-    val channel = conn.createChannel();
+    val channel = conn.createChannel()
 
     channel.exchangeDeclare(exchangeName, "direct", durable)
     channel.queueDeclare(queueName, durable)
@@ -44,14 +44,15 @@ class NotificationListener(channel: Channel, handler :MQHandler,
 
     while (consumer.getChannel.isOpen) {
       try {
-        val delivery = consumer.nextDelivery();
+        val delivery = consumer.nextDelivery()
         logger.debug("Received new request")
         val handled = handler.handleRequest(delivery.getBody)
         if (handled) {
-          channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+          channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false)
         }
       } catch {
         case e: ShutdownSignalException => // Do nothing
+        case e: InterruptedException => // Do nothing
         case e => logger.error("Error while handling new message", e)
       }
     }

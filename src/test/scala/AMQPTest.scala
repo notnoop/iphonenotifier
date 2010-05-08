@@ -24,6 +24,9 @@ trait MQSender {
       MessageProperties.TEXT_PLAIN, str.getBytes("UTF-8"))
   }
 
+  def sendMessages(list: Iterable[String]) =
+    for (msg <- list) sendMessage(msg)
+
   def close() = channel.close()
 }
 
@@ -42,46 +45,67 @@ class MQChannelSpec extends Spec
       semaphore.release()
       true
     }
+    def waitFor(i: Int) = semaphore.acquire(i)
   }
 
+  def newNotificationQueue(listener: Listener) =
+    new NotificationListener(
+        MQChannel(exchangeName, routing, routing, hostname, port),
+        listener, routing)
 
   describe("MQChannel") {
     it("receives sent messages") {
       val listener = new Listener
-      val queue = new NotificationListener(
-          MQChannel(exchangeName, routing, routing, hostname, port),
-          listener, routing)
+      val queue = newNotificationQueue(listener)
       queue.start()
 
-      sendMessage("123")
-      sendMessage("321")
+      val msgs = Set("123", "321")
+      sendMessages(msgs)
 
-      listener.semaphore.acquire(2)
+      listener.waitFor(msgs.size)
       queue.close()
 
-      listener.received should contain("123")
-      listener.received should contain("321")
-      listener.received should have size(2)
+      listener.received should be(msgs)
     }
 
     it("receives messages sent before start") {
-      sendMessage("987")
-      sendMessage("789")
-      sendMessage("765")
+      val msgs = Set("987", "789", "765")
+      sendMessages(msgs)
 
       val listener = new Listener
-      val queue = new NotificationListener(
-          MQChannel(exchangeName, routing, routing, hostname, port),
-          listener, routing)
+      val queue = newNotificationQueue(listener)
       queue.start()
 
-      listener.semaphore.acquire(3)
+      listener.waitFor(msgs.size)
       queue.close()
 
-      listener.received should contain("765")
-      listener.received should contain("987")
-      listener.received should contain("789")
-      listener.received should have size(3)
+      listener.received should be(msgs)
+    }
+
+    it("survives across restarts") {
+      val listener = new Listener
+      val firstQueue = newNotificationQueue(listener)
+      firstQueue.start()
+
+      val firstBatch = Set("123", "321")
+      val secondBatch = Set("456", "654")
+
+      sendMessages(firstBatch)
+
+      listener.waitFor(firstBatch.size)
+      firstQueue.close()
+
+      listener.received should be(firstBatch)
+
+      sendMessages(secondBatch)
+
+      val secondQueue = newNotificationQueue(listener)
+      secondQueue.start()
+
+      listener.waitFor(secondBatch.size)
+      secondQueue.close()
+
+      listener.received should be(firstBatch ++ secondBatch)
     }
   }
 }
