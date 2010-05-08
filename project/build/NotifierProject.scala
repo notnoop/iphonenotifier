@@ -6,6 +6,7 @@ class NotifierProject(info: ProjectInfo) extends DefaultProject(info) {
   val lagRepo = "Lag Repo" at "http://www.lag.net/repo/"
 
   val javaapns = "com.notnoop.apns" % "apns" % "0.1.4"
+  val json_jackson = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.4.0"
 
   val configgy = "net.lag" % "configgy" % "1.5"
   val logback = "ch.qos.logback" % "logback-classic" % "0.9.17"

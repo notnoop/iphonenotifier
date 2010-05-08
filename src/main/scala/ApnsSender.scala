@@ -4,6 +4,8 @@ import com.notnoop.apns.{APNS, ApnsService}
 import com.notnoop.apns.ReconnectPolicy.Provided.EVERY_HALF_HOUR
 
 import org.slf4j.LoggerFactory
+import org.codehaus.jackson.JsonNode
+import org.codehaus.jackson.map.ObjectMapper
 
 import java.math.BigInteger
 
@@ -40,15 +42,17 @@ class ApnsSender(service: ApnsService) {
 
 class MQApnsHandler(sender: ApnsSender) extends MQHandler {
   val logger = LoggerFactory.getLogger(getClass)
+  val mapper = new ObjectMapper
 
   def handleRequest(msg: Array[Byte]) = {
     try {
-      val json = JSON.parseFull(new String(msg, "UTF-8")).get.asInstanceOf[Map[String, Any]]
+      val rootNode = mapper.readValue(msg, 0, msg.length, classOf[JsonNode])
 
-      val token = json("token").asInstanceOf[String]
-      val message = json("message").asInstanceOf[String]
-      val threadid = json("threadid").asInstanceOf[String]
-      val badge = json.get("badge").getOrElse(0).asInstanceOf[Number].intValue
+      val token = rootNode.get("token").getTextValue
+      val message = rootNode.get("message").getTextValue
+      val threadid = rootNode.get("threadid").getTextValue
+      val badgeNode = rootNode.get("badge")
+      val badge = if (badgeNode == null) 0 else badgeNode.getIntValue
 
       sender.sendMessage(token, message, threadid, badge)
       true
