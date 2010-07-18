@@ -1,4 +1,4 @@
-package com.notnoop.smartpush.notifier
+package com.notnoop.notifier
 
 import org.scalatest.Spec
 import org.scalatest.matchers.ShouldMatchers

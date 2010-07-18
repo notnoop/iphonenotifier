@@ -1,4 +1,4 @@
-package com.notnoop.smartpush.notifier
+package com.notnoop.notifier
 
 import org.slf4j.LoggerFactory
 import net.lag.configgy.Configgy

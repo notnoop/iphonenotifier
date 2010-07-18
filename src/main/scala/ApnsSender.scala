@@ -1,4 +1,4 @@
-package com.notnoop.smartpush.notifier
+package com.notnoop.notifier
 
 import com.notnoop.apns.{APNS, ApnsService}
 import com.notnoop.apns.ReconnectPolicy.Provided.EVERY_HALF_HOUR
