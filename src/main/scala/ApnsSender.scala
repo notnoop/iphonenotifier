@@ -38,6 +38,7 @@ import org.codehaus.jackson.JsonNode
 import org.codehaus.jackson.map.ObjectMapper
 
 import java.math.BigInteger
+import java.util.Date
 
 import scala.util.parsing.json._
 
@@ -51,21 +52,8 @@ class ApnsSender(service: ApnsService) {
                      .build())
   }
 
-  def toHex(id: String) = new BigInteger(id).toString(16).toLowerCase()
-  def urlOf(threadidHex: String) = "https://mail.google.com/mail/s/#cv/Inbox/" + threadidHex
-
-  def sendMessage(token: String, message: String, threadid: String, badge: Int) {
-    val threadidHex = toHex(threadid)
-    val url = urlOf(threadidHex)
-
-    val payload = APNS.newPayload().sound("default")
-      .alertBody(message)
-      .customField("threadid", threadidHex)
-      .customField("msg.url", url)
-      .badge(badge).shrinkBody()
-      .build()
-
-    logger.debug("Notifying {} for message {}", token, message)
+  def sendMessage(token: String, payload: String, expiry: Int) {
+    logger.debug("Notifying {} for message {}", token, payload)
     service.push(token, payload)
   }
 }
@@ -79,12 +67,13 @@ class MQApnsHandler(sender: ApnsSender) extends MQHandler {
       val rootNode = mapper.readValue(msg, 0, msg.length, classOf[JsonNode])
 
       val token = rootNode.get("token").getTextValue
-      val message = rootNode.get("message").getTextValue
-      val threadid = rootNode.get("threadid").getTextValue
-      val badgeNode = rootNode.get("badge")
-      val badge = if (badgeNode == null) 0 else badgeNode.getIntValue
+      val payloadNode = rootNode.get("payload")
+      val payload = mapper.writeValueAsString(payloadNode)
 
-      sender.sendMessage(token, message, threadid, badge)
+      val expiryNode = rootNode.get("expiry")
+      val expiry = if (expiryNode == null) 0 else expiryNode.getIntValue
+
+      sender.sendMessage(token, payload, expiry)
       true
     } catch {
       case e =>
