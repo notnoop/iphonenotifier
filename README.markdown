@@ -32,8 +32,30 @@ config files, and a sample file would look like
         routing = "notifier.notifications"
     }
 
-    apns.keystore {
-        path = "/path/to/apns/certificate.p12"
-        pass = "apns_passcode"
+    apns {
+        keystore.path = "/path/to/apns/certificate.p12"
+        keystore.pass = "apns_passcode"
+    }
+
+    log {
+        filename = "/var/log/iphonenotifier.log"
+        roll = "daily"
+    }
+
+Expected Message Format
+=========================
+
+The AMPQ notifier expects JSON messages, that contain three properties:
+
+    token   -   The Device token the message should go to
+    payload -   The JSON payload, as specified by Apple
+    expiry (optional)   -   the expiration time of the message, specified in
+                seconds from epoch
+
+Sample message:
+
+    {
+        "token": "1234567890abcdef...",
+        "payload": { "aps": {"alert": "Hello World!"} }
     }
 
