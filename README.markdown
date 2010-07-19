@@ -85,5 +85,5 @@ launch a daemon of the project by running the command
     ./target/dist/bin/notifier [config-file]
 
 Please note that `notifier` requires the [daemon](http://libslack.org/daemon/).  The `pid` file
-would live in `/tmp/notifier.pid` (when running as user), or in
-`/var/run/notifier.pid` (when running as root).
+would live in `/tmp/iphonenotifier.pid` (when running as user), or in
+`/var/run/iphonenotifier.pid` (when running as root).
