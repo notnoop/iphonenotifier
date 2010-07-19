@@ -41,13 +41,17 @@ class NotifierProject(info: ProjectInfo) extends DefaultProject(info) {
   val json_jackson = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.4.0"
 
   val configgy = "net.lag" % "configgy" % "1.5"
-  val slf4j_configgy = "com.notnoop.logging" % "slf4j-configgy" % "0.0.1"
 
   val scalatest = "org.scalatest" % "scalatest" % "1.0" % "test"
 
+  // For Configgy Logger
+  val slf4j_configgy = "com.notnoop.logging" % "slf4j-configgy" % "0.0.1"
   override def ivyXML =
     <dependencies>
       <exclude module="logback-classic"/>
     </dependencies>
+
+  // For Logback Logger
+//  val logback = "ch.qos.logback" % "logback-classic" % "0.9.17"
 }
 

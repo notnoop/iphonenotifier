@@ -59,3 +59,31 @@ Sample message:
         "payload": { "aps": {"alert": "Hello World!"} }
     }
 
+Logging
+=======================
+
+The logging configuration is customizable.  You have the option of using
+[logback logger](http://logback.qos.ch/) or the less expressive [Configgy
+Logger](http://www.lag.net/configgy/).
+
+Unfortunately, the option is specified in
+`project/build/NotifierProject.scala`, as the appropriate lines would need to
+be (de)commented out.  Changing the options, require running
+
+    sbt update compile
+
+Logback is a more capable and expressive logging system, but Configgy logger
+is easier to setup and configure.
+
+Packaging
+=======================
+
+To bundle the project, you can run the shell script `./package.sh`.  The
+script would generate a deployable binary folder in `./target/dist`.  You can
+launch a daemon of the project by running the command
+
+    ./target/dist/bin/notifier [config-file]
+
+Please note that `notifier` requires the [daemon](http://libslack.org/daemon/).  The `pid` file
+would live in `/tmp/notifier.pid` (when running as user), or in
+`/var/run/notifier.pid` (when running as root).
