@@ -1,0 +1,12 @@
+#!/bin/bash
+
+PID_FILE=/var/run/notifier.pid
+
+mydir="`dirname $0`"
+mylib="`dirname $mydir`"/lib
+
+libs=`echo "$mylib"/*.jar | sed 's/ /:/g'`
+
+daemon \
+  -n iphonenotifier \
+  java -classpath $libs com.notnoop.notifier.Boot "$@"
